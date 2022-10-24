@@ -15,14 +15,14 @@
     -webkit-text-size-adjust: 100%;
 }
 
-a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
-}
+div, p {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 
-a:hover {
-    color: #535bf2;
+}
+div::-webkit-scrollbar {
+    display: none;
 }
 
 body {
@@ -38,11 +38,14 @@ h1 {
 }
 
 #app {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     max-width: 1280px;
     margin: 0 auto;
+    box-sizing: border-box;
     padding: 5px;
-    text-align: center;
-    /*height: 100vh;*/
+    height: calc(100vh);
 }
 
 @media (prefers-color-scheme: light) {

@@ -1,10 +1,32 @@
 <script setup lang="ts">
 
+import {onActivated, onMounted} from "vue";
+import {onBeforeRouteLeave} from "vue-router";
+
+let scroll = 0
+let el: HTMLElement | null = null
+onMounted(() => {
+  el = document.getElementById("view")
+})
+
+onBeforeRouteLeave(() => {
+
+  if (el) {
+    scroll = el.scrollTop
+  }
+})
+
+onActivated(() => {
+  const el = document.getElementById("view")
+  if (el) {
+    el.scrollTop = scroll
+  }
+})
 </script>
 
 <template>
-  <div class="page">
-    home
+  <div id="view" class="page">
+    about
   </div>
 </template>
 
