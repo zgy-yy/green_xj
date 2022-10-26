@@ -25,93 +25,94 @@ const requestParam = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 const activateCatIndex = ref(0)
 const cats = reactive([{text: '全部', value: 0}])
 const videos = reactive<VideoInfo[][]>([])
+for (let i = 0; i < 12; i++) {
+  videos[i] = []
+}
 
 const options: OptKV[][] = reactive([
   [{text: '全部', value: 0},],
-  [{text: '全部全部', value: 0},],
-  [{text: '全部', value: 0},],
-  [{text: '全部全部', value: 0},],
   [{text: '全部', value: 0},],
   [{text: '全部', value: 0},],
-  [{text: '全部全部', value: 0},],
+  [{text: '全部', value: 0},],
+  [{text: '全部', value: 0},],
+  [{text: '全部', value: 0},],
+  [{text: '全部', value: 0},],
   [{text: '全部', value: 0},]
 ])
+// create
+getCats(0, 0, 0, 0, 0, 0, 0, 0, 0, 1).then(res => {
+  // console.log(res)
+  const catKv = res.categories.map(item => transKv(item.catename, item.cateid))//分类
+  const areaKv = res.areas.map(item => transKv(item.areaname, item.areaid))//地区
+  const yearkv = res.years.map(item => transKv(item.yearname, item.yearid))//年份
+  const definitionkv = res.definitions.map(item => transKv(item.value, item.keyid))//分辨
+  const freekv = res.freetypes.map(item => transKv(item.value, item.keyid))//
+  const longvoicekv = res.langvoices.map(item => transKv(item.value, item.keyid))//
+  const durationKv = res.durations.map(item => transKv(item.value, item.keyid))//市场
+  const mosaickv = res.mosaics.map(item => transKv(item.value, item.keyid))//
+  const orderkv = res.orders.map(item => transKv(item.value, item.keyid))//排序
+  cats.push(...catKv)
+  options[0].push(...areaKv)
+  options[1].push(...longvoicekv)
+  options[2].push(...yearkv)
+  options[3].push(...orderkv)
+  options[4].push(...mosaickv)
+  options[5].push(...durationKv)
+  options[6].push(...definitionkv)
+  options[7].push(...freekv)
 
-onMounted(() => [
-  getCats(0, 0, 0, 0, 0, 0, 0, 0, 0, 1).then(res => {
-    // console.log(res)
-    const catKv = res.categories.map(item => transKv(`${item.cateid}`, item.cateid))//分类
-    const areaKv = res.areas.map(item => transKv(item.areaname, item.areaid))//地区
-    const yearkv = res.years.map(item => transKv(item.yearname, item.yearid))//年份
-    const definitionkv = res.definitions.map(item => transKv(item.value, item.keyid))//分辨
-    const freekv = res.freetypes.map(item => transKv(item.value, item.keyid))//
-    const longvoicekv = res.langvoices.map(item => transKv(item.value, item.keyid))//
-    const durationKv = res.durations.map(item => transKv(item.value, item.keyid))//市场
-    const mosaickv = res.mosaics.map(item => transKv(item.value, item.keyid))//
-    const orderkv = res.orders.map(item => transKv(item.value, item.keyid))//排序
-    cats.push(...catKv)
-    options[0].push(...freekv)
-    options[1].push(...yearkv)
-    // options[0].push(...areaKv)
-    // options[0].push(...areaKv)
-    videos.length = cats.length + 1
-    videos[0] = res.vodrows
-  })
-])
+  // console.log(videos)
+  // console.log(activateCatIndex.value)
+})
 
 const loading = ref(false);
 const finished = ref(false);
+const refreshing = ref(false);
+
 
 const onLoad = () => {
+  finished.value = false
+  loading.value = true
 
-  // 异步更新数据
-  // setTimeout 仅做示例，真实场景中一般为 ajax 请求
-  // setTimeout(() => {
-  //   for (let i = 0; i < 3; i++) {
-  //     list.value.push(list.value.length + 1);
-  //   }
-  //
-  //   // 加载状态结束
-  //   loading.value = false;
-  //
-  //   // 数据全部加载完成
-  //   if (list.value.length >= 9) {
-  //     finished.value = true;
-  //   }
-  // }, 1000)
+  updateVideos()
 }
 
-//根据分类加载数据，用于初始加载
-function getVideosByCatId(catID: number) {
-
-  getCats(catID, 0, 0, 0, 0, 0, 0, 0, 0, 1).then(res => {
-    videos[activateCatIndex.value] = res.vodrows
-    // console.log(res)
-  })
+function onRefresh() {
+  // 清空列表数据
+  finished.value = false;
+  videos[activateCatIndex.value] = []
+  // 重新加载数据
+  // 将 loading 设置为 true，表示处于加载状态
+  onLoad();
 }
 
 function updateVideos() {
-  getCats(...requestParam).then(res => {
-    videos[activateCatIndex.value] = res.vodrows
-    // console.log(res)
+  const nextPage = Math.ceil(videos[activateCatIndex.value].length / 16) + 1
+  requestParam[9] = nextPage
+  return getCats(...requestParam).then(res => {
+    videos[activateCatIndex.value].push(...res.vodrows)
+    if (res.vodrows.length <16) { //如果没有数据
+      finished.value = true
+    }
+    refreshing.value = false
+    loading.value = false
   })
 }
 
 //下拉框 改变，获取新数据
 function handleDropdownChange(index: number, value: number) {
   requestParam[index + 1] = value
-  console.log(activateCatIndex.value)
+  console.log(requestParam)
+  onRefresh()
 }
 
 function handleFirstView(index: number) {
-  console.log(activateCatIndex)
   if (index == 0) {
     return
   }
-
   const catid = cats[index].value
   requestParam[0] = catid
-  getVideosByCatId(catid)
+  // getVideosByCatId(catid)
 }
 </script>
 
@@ -126,16 +127,19 @@ function handleFirstView(index: number) {
     </div>
     <van-tabs v-model:active="activateCatIndex" swipeable type="card" @rendered="handleFirstView">
       <van-tab id="scroll" class="tabs" v-for="(i,index) in cats" :title="i.text" :key="i.value">
-        <van-list
-            v-model:loading="loading"
-            :finished="finished"
-            finished-text="没有更多了"
-            @load="onLoad"
-        >
-          <div class="list">
-            <Card v-for="item in videos[index]"></Card>
-          </div>
-        </van-list>
+        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+          <van-list
+              v-model:loading="loading"
+              :finished="finished"
+              finished-text="没有更多了"
+              @load="onLoad"
+          >
+            <div class="list">
+              <Card v-for="item in videos[index]" :id="item.vodid" :img="item.coverpic" :title="item.title"
+                    :duration="item.duration" :key="item.vodid"></Card>
+            </div>
+          </van-list>
+        </van-pull-refresh>
       </van-tab>
     </van-tabs>
   </div>

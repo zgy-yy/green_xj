@@ -1,20 +1,54 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
-import {onActivated, onMounted} from "vue";
+import {onActivated, onMounted, reactive, ref} from "vue";
+import {getPlayInfo, getVideoComments, getVideoLike} from "../http/api";
+import {CommeItem, VideoInfo} from "../types/type";
 
 const props = defineProps<{ id: string }>()
+
+const curId = ref(props.id)
 
 const router = useRouter()
 onMounted(() => {
   console.log(props)
 })
 
+const videoObj = ref<VideoInfo>(null)
+const m3u8Url = ref('')
+const likeVideo = reactive<VideoInfo[]>([])
+const comment = reactive<CommeItem[]>([])
+const likeVideoLoading = ref(true)
+const commentsLoading = ref(true)
+
+function update(id: string) {
+  getPlayInfo(id).then(res => {
+    console.log(res)
+    m3u8Url.value = res.httpurl
+  })
+  getVideoLike(id).then(data => {
+    likeVideo.push(...data.likerows)
+    videoObj.value = data.vodrow
+    // console.log(data)
+    likeVideoLoading.value = false
+  })
+  getVideoComments(id).then(data => {
+    // console.log(data)
+    comment.push(...data.rows)
+    commentsLoading.value = false
+  })
+}
+
+update(curId.value)
+
 function onClickLeft() {
   router.back()
 }
 
-function changeOrg(){
-  console.log('change')
+function changeOrg(id:string) {
+  likeVideoLoading.value=true
+  commentsLoading.value=true
+  update(id)
+  console.log('change',id)
 }
 </script>
 
@@ -22,13 +56,13 @@ function changeOrg(){
   <div id="view" class="page">
     <van-icon @click="onClickLeft" class="back" name="arrow-left" size="1.3rem"/>
     <video controls>
-      <source src="movie.mp4" type="video/mp4">
-      <source src="movie.ogg" type="video/ogg">
+      <source :src="m3u8Url" type="video/mp4">
+      <!--      <source src="movie.ogg" type="video/ogg">-->
       您的浏览器不支持Video标签。
     </video>
     <van-notice-bar
         :scrollable="false"
-        text="、逝去的生活和失去的机会。"
+        :text="videoObj?.title"
         background="black"
         color="white"
     >
@@ -39,48 +73,51 @@ function changeOrg(){
     <p class="tit">相关推荐</p>
     <div class="likes">
 
-      <van-card
-          v-for="i in 4"
-          class="card"
-      >
-        <template #thumb >
-          <van-image
-              @click="changeOrg"
-              class="img"
-              src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
-          />
-        </template>
-        <template #title>
-          <p class="title">没法哦就发哦哦哇嘎没法哦就发哦哦哇嘎没法哦就发哦哦哇嘎</p>
-        </template>
-        <template #tag>
-          <p class="tag">38:12</p>
-        </template>
-        <template #tags>
-          <div class="tags">
-            <van-tag type="primary" size="large">标签标</van-tag>
-            <van-tag type="primary" size="large">标签</van-tag>
-            <van-tag type="primary" size="large">标签</van-tag>
-            <van-tag type="primary" size="large">标签标签</van-tag>
-          </div>
-        </template>
-      </van-card>
+      <van-skeleton title :row="3" :loading="likeVideoLoading">
+        <van-card
+            v-for="item in likeVideo"
+            class="card"
+            @click="changeOrg(item.vodid)"
+            :key="item.vodid"
+        >
+          <template #thumb>
+            <van-image
+                class="img"
+                :src="item.coverpic"
+            />
+          </template>
+          <template #title>
+            <p class="title">{{ item.title }}</p>
+          </template>
+          <template #tag>
+            <p class="tag">{{ item.duration }}</p>
+          </template>
+          <template #tags>
+            <div class="tags">
+              <van-tag v-for="tag in item.tags.slice(0,item.tags.length>4?4:item.tags.length-1)" type="primary"
+                       size="large">{{ tag.tagname }}
+              </van-tag>
+            </div>
+          </template>
+        </van-card>
+      </van-skeleton>
+
     </div>
     <p class="tit">评论</p>
     <div class="comments">
 
-      <van-skeleton v-for="i in 3" title avatar :row="3" :loading="false" :key="i">
-        <div class="comment-item">
+      <van-skeleton title avatar :row="3" :loading="commentsLoading">
+        <div class="comment-item" v-for="item in comment" :key="item.id">
           <div>
             <van-image
                 round
                 width="2rem"
                 height="2rem"
-                src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
+                :src="item.avatar_url"
             />
-            <span>name</span>
+            <span>{{ item.nickname }}</span>
           </div>
-          <p>评论怕你评论怕你改好评论怕你改好评论怕你改好评论怕你改好评论怕你改好评论怕你改好评论怕你改好改好</p>
+          <p>{{ item.content }}</p>
         </div>
       </van-skeleton>
 
@@ -100,13 +137,12 @@ function changeOrg(){
   .back {
     position: absolute;
     z-index: 2;
-    top: 1.2rem;
+    top: 2.3rem;
     left: 1rem;
     color: yellow;
   }
 
   video {
-    border: 1px solid red;
     width: 100%;
     position: sticky;
     top: 0;
@@ -156,16 +192,18 @@ function changeOrg(){
       }
 
       .tags {
+        //border: 1px solid red;
         margin-top: .5rem;
-        width: 9rem;
+        width: 10.5rem;
         height: 4rem;
         margin-left: 5rem;
         font-size: 1rem;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         flex-wrap: wrap;
         //align-items: stretch;
         align-content: space-around;
+        overflow: hidden;
       }
     }
   }
@@ -178,16 +216,18 @@ function changeOrg(){
       & > div:first-child {
         flex-shrink: 0;
         display: flex;
-        align-items: start;
-        span{
+        align-items: center;
+
+        span {
           margin-left: 1.2rem;
+          font-size: .7rem;
         }
       }
 
       & > p {
-        text-indent:1rem;
+        text-indent: 1rem;
         margin-left: 1rem;
-        font-size: .8rem;
+        font-size: 1rem;
       }
     }
   }

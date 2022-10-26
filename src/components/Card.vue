@@ -2,11 +2,11 @@
 import {ref} from 'vue'
 import {useRouter} from "vue-router";
 
-// const props = defineProps<{id:string,img:string,title:string,duration:string}>()
+const props = defineProps<{id:string,img:string,title:string,duration:string}>()
 const router = useRouter()
 
 function goPlayer() {
-  router.push({name:'player',params:{id:Math.random()}})
+  router.push({name:'player',params:{id:props.id}})
 }
 </script>
 
@@ -17,10 +17,10 @@ function goPlayer() {
         block
         width="100%"
         height="85%"
-        src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
+        :src="img"
     />
-    <span id="dur">30:31</span>
-    <p>你好文本你好文本你好文本你好文本你好文本</p>
+    <span id="dur">{{duration}}</span>
+    <p>{{title}}</p>
   </div>
 </template>
 

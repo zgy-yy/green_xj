@@ -8,7 +8,7 @@ import {VideoInfo} from "../types/type";
 interface Props {
   title: string,
   spid?: string,
-  count?: number,
+  count?: string,
   videos: VideoInfo[]
 }
 
@@ -18,7 +18,6 @@ const router = useRouter()
 
 function goPage() {
   if (props.spid) {
-    console.log(props)
     router.push({name: 'detail', params: {spid: props.spid}})
   }
 }
@@ -31,7 +30,8 @@ function goPage() {
       <p><span>{{ title }}</span><span @click="goPage">{{ count }}<van-icon name="arrow"/></span></p>
       <div class="scroll-view">
         <div class="cards">
-          <Card v-for="i in 10"></Card>
+          <Card v-for="i in videos" :id="i.vodid" :img="i.coverpic" :title="i.title"
+                :duration="i.duration" :key="i.vodid"></Card>
         </div>
       </div>
     </div>
@@ -48,7 +48,6 @@ function goPage() {
       white-space: nowrap;
       text-overflow: ellipsis;
       width: 80%;
-      border: 1px solid red;
     }
 
     & > span:last-child {
@@ -56,7 +55,6 @@ function goPage() {
       white-space: nowrap;
       text-overflow: ellipsis;
       font-size: .6rem;
-      border: 1px solid red;
     }
 
     padding: .8rem 1rem .5rem .2rem;

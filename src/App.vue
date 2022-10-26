@@ -6,11 +6,11 @@ const active = ref(0);
 
 <template>
   <router-view v-slot="{ Component }">
-    <keep-alive exclude="Play">
-      <transition name="fade">
+    <transition name="fade">
+      <keep-alive exclude="Play">
         <component :is="Component"/>
-      </transition>
-    </keep-alive>
+      </keep-alive>
+    </transition>
   </router-view>
 
   <van-tabbar v-show="true" :fixed="false" route v-model="active">
@@ -23,10 +23,11 @@ const active = ref(0);
 </template>
 
 <style scoped>
-.fade-enter-from{
+.fade-enter-from {
   opacity: 0;
 }
-.fade-enter-active{
+
+.fade-enter-active {
   transition: opacity .68s ease;
 }
 
