@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import {ref} from 'vue'
 import {useRouter} from "vue-router";
 
-const props = defineProps<{id:string,img:string,title:string,duration:string}>()
+const props = defineProps<{ id: string, img: string, title: string, duration: string }>()
 const router = useRouter()
 
+
 function goPlayer() {
-  router.push({name:'player',params:{id:props.id}})
+  router.push({name: 'player', params: {id: props.id}})
 }
 </script>
 
@@ -19,8 +19,8 @@ function goPlayer() {
         height="85%"
         :src="img"
     />
-    <span id="dur">{{duration}}</span>
-    <p>{{title}}</p>
+    <span id="dur">{{ duration }}</span>
+    <p>{{ title }}</p>
   </div>
 </template>
 

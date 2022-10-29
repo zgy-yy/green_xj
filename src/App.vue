@@ -12,12 +12,11 @@ const active = ref(0);
       </keep-alive>
     </transition>
   </router-view>
-
-  <van-tabbar v-show="true" :fixed="false" route v-model="active">
+  <van-tabbar v-show="true" :fixed="false" route v-model="active" active-color="#aa4c8f">
     <van-tabbar-item replace to="/" icon="home-o">首页</van-tabbar-item>
-    <van-tabbar-item to="/artist" icon="search">搜索</van-tabbar-item>
+    <van-tabbar-item to="/artist" icon="label-o">频道</van-tabbar-item>
     <van-tabbar-item to="/category" icon="friends-o">分类</van-tabbar-item>
-    <van-tabbar-item to="/about" icon="setting-o">设置</van-tabbar-item>
+    <van-tabbar-item to="/about" icon="gift-card-o">收藏</van-tabbar-item>
   </van-tabbar>
 
 </template>

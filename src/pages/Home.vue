@@ -59,8 +59,6 @@ getHomeRecommendList().then(res => {
       videos: outflow,
     },
   ]
-  console.log(videoData)
-
   sliders.map(item => {
     if (item.spid) {
       swipers.push(item)
@@ -75,16 +73,17 @@ getHomeRecommendList().then(res => {
 
 <template>
   <div class="page" id="view">
-    <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">
-      <van-swipe-item v-for="item in swipers" :key="item.spid">
-        <van-image
-            block
-            width="375px"
-            fit="contain"
-            :src="item.pic"
-        />
-      </van-swipe-item>
-    </van-swipe>
+<!--    <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">-->
+<!--      <van-swipe-item v-for="item in swipers" :key="item.spid">-->
+<!--        &lt;!&ndash;        :src="item.pic"&ndash;&gt;-->
+<!--        <van-image-->
+<!--            block-->
+<!--            width="375px"-->
+<!--            fit="contain"-->
+<!--            :src="item.pic"-->
+<!--        />-->
+<!--      </van-swipe-item>-->
+<!--    </van-swipe>-->
 
     <div>
       <van-empty v-if="loading" image="search" description="资源获取中..."/>
@@ -104,7 +103,7 @@ getHomeRecommendList().then(res => {
     font-size: 20px;
     line-height: 150px;
     text-align: center;
-    background-color: #39a9ed;
+    //background-color: #39a9ed;
   }
 }
 </style>

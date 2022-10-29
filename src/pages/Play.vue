@@ -3,15 +3,18 @@ import {useRoute, useRouter} from "vue-router";
 import {onActivated, onMounted, reactive, ref} from "vue";
 import {getPlayInfo, getVideoComments, getVideoLike} from "../http/api";
 import {CommeItem, VideoInfo} from "../types/type";
+import {useCollection} from "../pinia/colletion";
 
 const props = defineProps<{ id: string }>()
+const  collectionStore=useCollection()
+const lovIcon = ref('like-o')
 
 const curId = ref(props.id)
 
 const router = useRouter()
-onMounted(() => {
-  console.log(props)
-})
+// onMounted(() => {
+//   console.log(props)
+// })
 
 const videoObj = ref<VideoInfo>(null)
 const m3u8Url = ref('')
@@ -21,6 +24,12 @@ const likeVideoLoading = ref(true)
 const commentsLoading = ref(true)
 
 function update(id: string) {
+  if (collectionStore.loveVideos.includes(id)) {
+    lovIcon.value = 'like'
+  }else {
+    lovIcon.value = 'like-o'
+  }
+
   getPlayInfo(id).then(res => {
     console.log(res)
     m3u8Url.value = res.httpurl
@@ -48,8 +57,20 @@ function changeOrg(id:string) {
   likeVideoLoading.value=true
   commentsLoading.value=true
   update(id)
-  console.log('change',id)
 }
+function addLove() {
+  if (lovIcon.value == 'like') {
+    collectionStore.loveVideos.filter((item) => {
+      return item != curId.value
+    })
+    lovIcon.value = 'like-o'
+  } else {
+    collectionStore.addLoveVid(curId.value)
+    lovIcon.value = 'like'
+  }
+
+}
+
 </script>
 
 <template>
@@ -63,11 +84,11 @@ function changeOrg(id:string) {
     <van-notice-bar
         :scrollable="false"
         :text="videoObj?.title"
-        background="black"
+        background="#595857"
         color="white"
     >
       <template #right-icon>
-        <van-icon name="like-o" size="1.3rem"/>
+        <van-icon  @click='addLove' :name="lovIcon" size="1.3rem"/>
       </template>
     </van-notice-bar>
     <p class="tit">相关推荐</p>
@@ -94,7 +115,7 @@ function changeOrg(id:string) {
           </template>
           <template #tags>
             <div class="tags">
-              <van-tag v-for="tag in item.tags.slice(0,item.tags.length>4?4:item.tags.length-1)" type="primary"
+              <van-tag v-for="tag in item.tags.slice(0,item.tags.length>4?4:item.tags.length-1)" color="#f8e58c" text-color="#ec6800"
                        size="large">{{ tag.tagname }}
               </van-tag>
             </div>
@@ -139,7 +160,7 @@ function changeOrg(id:string) {
     z-index: 2;
     top: 2.3rem;
     left: 1rem;
-    color: yellow;
+    color: #f8b500;
   }
 
   video {
@@ -150,7 +171,7 @@ function changeOrg(id:string) {
   }
 
   .tit {
-    color: red;
+    color: #f0908d;
     font-size: 1.2rem;
     padding: .5rem 0 .1rem .8rem;
   }

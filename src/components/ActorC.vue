@@ -33,7 +33,6 @@ function goDetail() {
   //border: 1px solid red;
   display: flex;
   align-items: center;
-  font-size: 1.3rem;
 
   & > div {
     flex-shrink: 0;
@@ -42,6 +41,8 @@ function goDetail() {
   p {
     @include text-nowrap();
     padding-left: 1rem;
+    font-size: 1rem;
+    font-family: "Arial","Microsoft YaHei","黑体","宋体",sans-serif;
   }
 }
 </style>

@@ -2,8 +2,9 @@
 import {onActivated, onMounted, reactive, ref} from 'vue'
 import Card from "../components/Card.vue";
 import {useScroll} from "../hooks/useScroll";
-import {KV, VideoInfo} from "../types/type";
+import {VideoInfo} from "../types/type";
 import {getCats} from "../http/api";
+import {useTagsStore} from "../pinia/tags";
 
 interface OptKV {
   text: string,
@@ -19,6 +20,9 @@ function transKv(text: string, value: number) {
 
 
 useScroll('scroll')
+
+const store = useTagsStore()
+
 
 //标签 分类
 const requestParam = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
@@ -89,9 +93,11 @@ function onRefresh() {
 function updateVideos() {
   const nextPage = Math.ceil(videos[activateCatIndex.value].length / 16) + 1
   requestParam[9] = nextPage
-  return getCats(...requestParam).then(res => {
+
+  return getCats(requestParam[0], requestParam[1], requestParam[3], requestParam[7], requestParam[6], requestParam[8],
+      requestParam[5], requestParam[2],requestParam[4],requestParam[9]).then(res => {
     videos[activateCatIndex.value].push(...res.vodrows)
-    if (res.vodrows.length <16) { //如果没有数据
+    if (res.vodrows.length < 16) { //如果没有数据
       finished.value = true
     }
     refreshing.value = false
@@ -102,7 +108,6 @@ function updateVideos() {
 //下拉框 改变，获取新数据
 function handleDropdownChange(index: number, value: number) {
   requestParam[index + 1] = value
-  console.log(requestParam)
   onRefresh()
 }
 
@@ -112,7 +117,6 @@ function handleFirstView(index: number) {
   }
   const catid = cats[index].value
   requestParam[0] = catid
-  // getVideosByCatId(catid)
 }
 </script>
 
@@ -125,7 +129,7 @@ function handleFirstView(index: number) {
                            :key="index"/>
       </van-dropdown-menu>
     </div>
-    <van-tabs v-model:active="activateCatIndex" swipeable type="card" @rendered="handleFirstView">
+    <van-tabs v-model:active="activateCatIndex" swipeable @rendered="handleFirstView">
       <van-tab id="scroll" class="tabs" v-for="(i,index) in cats" :title="i.text" :key="i.value">
         <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
           <van-list

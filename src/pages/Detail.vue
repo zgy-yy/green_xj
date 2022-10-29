@@ -5,6 +5,10 @@ import Card from "../components/Card.vue";
 import {getSpecialDetail} from "../http/api";
 import {Actor, VideoInfo} from "../types/type";
 import {useScroll} from "../hooks/useScroll";
+import {useCollection} from "../pinia/colletion";
+
+const collectionStore = useCollection()
+const lovIcon = ref('like-o')
 
 const props = defineProps<{ spid: string }>()
 let lastSpid = props.spid
@@ -29,10 +33,17 @@ onMounted(() => {
   scrollEl = document.getElementById('page') as HTMLDivElement
   navBar = document.querySelector('.nav-bar') as HTMLDivElement
 })
+
 onActivated(() => {
   const spid = route.params.spid as string
-  console.log(1)
+  if (collectionStore.loveSpecial.includes(spid)) {
+    lovIcon.value = 'like'
+  }else {
+    lovIcon.value = 'like-o'
+  }
+
   if (lastSpid == spid) {
+
     // console.log('same')
   } else {
     lastSpid = spid
@@ -43,25 +54,34 @@ onActivated(() => {
       loading.value = false
       videos.push(...data.vodrows)
       actorMsg.value = data.row
-      // setVideos(data.vodrows)
     })
   }
-  // console.log(route.params)
-
 })
 
 function handleScroll() {
 
   const top = scrollEl.scrollTop
-  console.log(scrollEl)
   if (top > 300) {
     return
   }
-  navBar.style.background = `rgba(238, 238, 0,${top / 200})`
+  navBar.style.background = `rgba(82, 78, 77,${top / 200})`
 }
 
 function handleClickLeft() {
   router.back()
+}
+
+function addLove() {
+  if (lovIcon.value == 'like') {
+    collectionStore.loveSpecial.filter((item) => {
+      return item != lastSpid
+    })
+    lovIcon.value = 'like-o'
+  } else {
+    collectionStore.addLoveSpecial(lastSpid)
+    lovIcon.value = 'like'
+  }
+
 }
 </script>
 
@@ -73,11 +93,19 @@ function handleClickLeft() {
         left-text="返回"
         left-arrow
         @click-left="handleClickLeft"
-    />
+    >
+      <template #left>
+        <p class="back"><van-icon color="white" name="arrow-left" /> 返回</p>
+      </template>
+      <template #title>
+       <p class="title"> {{actorMsg?.spname}}</p>
+      </template>
+    </van-nav-bar>
     <van-empty v-if="loading" image="search" description="资源获取中..."/>
+<!--  actorMsg?.coverpic  -->
     <div class="img-bar" :style="{backgroundImage:`url(${actorMsg?.coverpic})`}">
       <p><span>{{ actorMsg?.intro }}</span>
-        <van-icon name="like-o"/>
+        <van-icon @click="addLove" :name="lovIcon"/>
       </p>
     </div>
     <div class="cards">
@@ -97,9 +125,13 @@ function handleClickLeft() {
   position: relative;
 
   .nav-bar {
+    color: white;
     width: calc(100% - 10px);
     position: fixed;
-    background: rgba(238, 238, 0, 0.3);
+    background: rgba(82, 78, 77, 0.3);
+    .title{
+      color: white;
+    }
   }
 
   .img-bar {
